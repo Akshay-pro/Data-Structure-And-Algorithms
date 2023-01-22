@@ -2,11 +2,11 @@
 #include <stdlib.h>
 
 struct Node{
+    struct Node *prev;
     int data;
     struct Node *next;
 };
-struct Node* head = NULL;
-
+struct Node *head = NULL;
 int insertion();
 int insertionAtBeginning();
 int insertionAtPosition();
@@ -18,8 +18,8 @@ int deletionAtEnd();
 int display();
 int reverse();
 
-int main(){
 
+int main(){
     int choice;
     while(1){
         printf("1. Insertion 2. Deletion 3. Display 4. Reverse 5.Exit \n");
@@ -65,6 +65,7 @@ int insertion(){
     return 0;
 }
 
+
 int insertionAtBeginning(){
     int data;
     printf("Enter the data: ");
@@ -74,10 +75,12 @@ int insertionAtBeginning(){
     newNode->data=data;
     if(head==NULL){
         newNode->next=NULL;
+        newNode->prev=NULL;
         head=newNode;
-
     }else{
+        newNode->prev=NULL;
         newNode->next=head;
+        head->prev=newNode;
         head=newNode;
 
         printf("Node Inserted At Beginning Successfully \n");
@@ -115,6 +118,8 @@ int insertionAtPosition(){
             }
 
             newNode->next=temp->next;
+            newNode->prev=temp;
+            temp->next->prev=newNode;
             temp->next=newNode;
 
              printf("Node Inserted At %d position Successfully \n",pos);
@@ -135,6 +140,7 @@ int insertionAtEnd(){
     newNode->data=data;
     if(head==NULL){
         newNode->next=NULL;
+        newNode->prev=NULL;
         head=newNode;
     }else{
         struct Node* temp = head;
@@ -142,6 +148,7 @@ int insertionAtEnd(){
             temp=temp->next;
         }
         newNode->next=temp->next;
+        newNode->prev=temp;
         temp->next=newNode;
 
          printf("Node Inserted At End Successfully \n");
@@ -150,7 +157,6 @@ int insertionAtEnd(){
 
     return 0;
 }
-
 int deletion(){
     int choice;
     printf("1. Deletion At The Beginning   2.Deletion At Specific Position   3. Deletion At The End  \n");
@@ -176,6 +182,7 @@ int deletionAtBeginning(){
     }else{
         struct Node *newNode = head;
         head=head->next;
+        head->prev=NULL;
         free(newNode);
 
         printf("Node Deleted At Beginning Successfully \n");
@@ -195,7 +202,7 @@ int deletionAtPosition(){
             lengthOfList++;
             temp=temp->next;
         }
-        printf("Enter position to insert: ");
+        printf("Enter position to delete: ");
         scanf("%d",&pos);
 
         if(pos>0 && pos<=lengthOfList){
@@ -212,7 +219,8 @@ int deletionAtPosition(){
                 }
 
                 struct Node *newNode = temp->next;
-                temp->next= temp->next->next;
+                temp->next= newNode->next;
+                newNode->next->prev=temp;
 
                 free(newNode);
 
@@ -230,25 +238,20 @@ int deletionAtEnd(){
 
     if(head==NULL){
         printf("No Node Available To Delete\n");
+    }else if(head->next==NULL){
+        head=NULL;
     }else{
         struct Node* temp = head;
-        if(temp->next==NULL){
-            struct Node* newNode = temp;
-            head=NULL;
-            free(newNode);
-        }else{
-            while(temp->next->next!=NULL){
-                temp=temp->next;
-            }
-            struct Node* newNode = temp->next;
-            temp->next=NULL;
-
-            free(newNode);
+        while(temp->next->next!=NULL){
+            temp=temp->next;
         }
+        struct Node* newNode = temp->next;
+        temp->next=NULL;
 
-        printf("Node Deleted At The End Successfully \n");
+        free(newNode);
     }
 
+    printf("Node Deleted At The End Successfully \n");
 
     return 0;
 }
@@ -257,14 +260,22 @@ int display(){
 
     struct Node *temp = head;
 
-    printf("The Nodes Are : \n ");
-    while(temp!=NULL){
+    printf("The Nodes Are In Forward: \n ");
+    while(temp->next!=NULL){
         printf("%d ", temp->data);
         temp=temp->next;
+    }
+    printf("%d",temp->data);
+    printf("\n");
+    printf("The Nodes Are In Backward: \n ");
+    while(temp!=NULL){
+        printf("%d ", temp->data);
+        temp=temp->prev;
     }
     printf("\n\n");
     return 0;
 }
+
 
 int reverse(){
     struct Node *temp,*curr,*prev;
@@ -274,11 +285,10 @@ int reverse(){
     while(temp!=NULL){
         curr= temp->next;
         temp->next=prev;
+        temp->prev=curr;
         prev=temp;
         temp=curr;
     }
     head=prev;
 
 }
-
-
